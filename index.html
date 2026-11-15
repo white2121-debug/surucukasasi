@@ -5,12 +5,12 @@
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="default">
-<meta name="apple-mobile-web-app-title" content="TAG Takip">
+<meta name="apple-mobile-web-app-title" content="Sürücü Kasası">
 <meta name="theme-color" content="#0E1114">
 <link rel="manifest" href="manifest.webmanifest">
 <link rel="apple-touch-icon" href="apple-touch-icon.png">
 <style>:root{padding-top:env(safe-area-inset-top);padding-bottom:env(safe-area-inset-bottom)}body{margin:0}[hidden]{display:none!important}</style>
-<title>TAG Takip</title>
+<title>Sürücü Kasası</title>
 <meta name="claude:viewport-fit-sides" content="cover">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@600;700&family=Barlow:wght@400;500;600;700&display=swap">
@@ -153,7 +153,7 @@ nav.tabs button[aria-current="page"] svg{color:var(--accent)}
 'use strict';
 var KEY='tagtakip.v1';
 var DEF={v:1,rides:[],exps:[],shifts:[],set:{p3:449.99,pDay:999.99,pWeek:4999.99,quick:[250,500,750,1000,1500,2000]},lastBackup:null};
-var CATS={tag:'TAG paketi',yakit:'Yakıt',yemek:'Yemek / içecek',bakim:'Bakım / tamir',diger:'Diğer'};
+var CATS={tag:'Sabit ödeme',yakit:'Yakıt',yemek:'Yemek / içecek',bakim:'Bakım / tamir',diger:'Diğer'};
 var AYLAR=['Ocak','Şubat','Mart','Nisan','Mayıs','Haziran','Temmuz','Ağustos','Eylül','Ekim','Kasım','Aralık'];
 var GUNLER=['Paz','Pzt','Sal','Çar','Per','Cum','Cmt'];
 
@@ -215,7 +215,7 @@ function head(title,withDate){
 function vBugun(){
   var k=state.day,a=agg(function(d){return d===k}),sh=activeShift();
   var dayShifts=S.shifts.filter(function(s){return s.day===k&&s.end});
-  var h=head('TAG<b>Takip</b>',true)+'<div class="stack">';
+  var h=head('Sürücü<b>Kasası</b>',true)+'<div class="stack">';
   h+='<div class="card hero"><div class="label">'+(k===today()?'Bugünkü net kazanç':fmtDay(k)+' net kazanç')+'</div>'+
      '<div class="big num'+(a.net<0?' neg':'')+'">'+tl(a.net)+'</div>'+
      '<div class="grid3" style="margin-top:10px">'+
@@ -247,7 +247,7 @@ function rowHtml(type,id,a,b,amt,cls){return '<div class="row"><div class="main"
 function vGider(){
   var k=state.day,s=S.set;
   var h=head('Gider',true)+'<div class="stack">';
-  h+='<div class="label">TAG paketi (fiyatı kontrol edip kaydedin)</div><div class="cats">'+
+  h+='<div class="label">Sabit ödeme (paket / kontak)</div><div class="cats">'+
      '<button class="cat tag" data-tag="3"><span>3 Saatlik</span><small class="num">'+tl2(s.p3)+'</small></button>'+
      '<button class="cat tag" data-tag="g"><span>Günlük</span><small class="num">'+tl2(s.pDay)+'</small></button>'+
      '<button class="cat tag" data-tag="h" style="grid-column:span 2"><span>Haftalık</span><small class="num">'+tl2(s.pWeek)+'</small></button></div>';
@@ -301,7 +301,7 @@ function vRapor(){
   var catKeys=Object.keys(CATS).filter(function(c){return a.cat[c]});
   h+='<h2>Gider dağılımı</h2><div class="card"><div class="list">'+(catKeys.length?catKeys.map(function(c){return kv(CATS[c]+' <span class="note">%'+Math.round(a.cat[c]/a.gider*100)+'</span>',tl(a.cat[c]))}).join(''):'<div class="empty">Bu dönemde gider yok.</div>')+'</div></div>';
 
-  h+='<h2>TAG paketi seçimi</h2><div class="tip">'+tagTip(a)+'</div>';
+  h+='<h2>Hangi sabit ödeme kârlı?</h2><div class="tip">'+tagTip(a)+'</div>';
 
   var wd=Object.keys(a.byDay).filter(function(k){var x=a.byDay[k];return x.brut||x.gider||x.ms}).sort().reverse();
   h+='<h2>Günler</h2><div class="card"><div class="list">'+(wd.length?wd.map(function(k){var x=a.byDay[k];var n=x.brut-x.gider;
@@ -312,10 +312,10 @@ function kv(k,v){return '<div class="kv"><span>'+k+'</span><span class="v num">'
 function tagTip(a){
   var s=S.set,blocks=Math.floor(s.pDay/s.p3),hLimit=blocks*3,d=1;
   while(d*s.pDay<s.pWeek*0.99&&d<7)d++;
-  var t='Bir günde <b>'+hLimit+' saatten fazla</b> çalışacaksanız günlük paket, 3 saatlik paketlerden ucuz gelir ('+(blocks+1)+' × '+tl(s.p3)+' = '+tl((blocks+1)*s.p3)+').';
-  if(Math.abs(d*s.pDay-s.pWeek)<s.pWeek*0.01)t+=' Haftada <b>'+d+' gün</b> çalışırsanız günlük ve haftalık paket aynı tutar; <b>'+(d+1)+' gün ve üzeri</b> çalışacaksanız haftalık paket kazandırır.';
-  else t+=' Haftada <b>'+d+' gün ve üzeri</b> çalışacaksanız haftalık paket, günlük paketlerden ucuzdur.';
-  if(a.cat.tag)t+='<br><br>Bu dönemde TAG paketlerine <b class="num">'+tl(a.cat.tag)+'</b> ödediniz; bu, brüt gelirin <b>%'+(a.brut?Math.round(a.cat.tag/a.brut*100):0)+'</b>’i.';
+  var t='Bir günde <b>'+hLimit+' saatten fazla</b> çalışacaksanız günlük ödeme, 3 saatlik ödemelerden ucuz gelir ('+(blocks+1)+' × '+tl(s.p3)+' = '+tl((blocks+1)*s.p3)+').';
+  if(Math.abs(d*s.pDay-s.pWeek)<s.pWeek*0.01)t+=' Haftada <b>'+d+' gün</b> çalışırsanız günlük ve haftalık ödeme aynı tutar; <b>'+(d+1)+' gün ve üzeri</b> çalışacaksanız haftalık ödeme kazandırır.';
+  else t+=' Haftada <b>'+d+' gün ve üzeri</b> çalışacaksanız haftalık ödeme, günlük ödemelerden ucuzdur.';
+  if(a.cat.tag)t+='<br><br>Bu dönemde sabit ödemelere <b class="num">'+tl(a.cat.tag)+'</b> ödediniz; bu, brüt gelirin <b>%'+(a.brut?Math.round(a.cat.tag/a.brut*100):0)+'</b>’i.';
   if(state.per==='ay'&&a.nDays){var R=periodRange(),end=R.to<today()?R.to:today();var weeks=((pdate(end)-pdate(R.from))/864e5+1)/7;
     if(weeks>=1)t+=' Bu ay haftada ortalama <b>'+(a.nDays/weeks).toLocaleString('tr-TR',{maximumFractionDigits:1})+' gün</b> çalıştınız.'}
   return t;
@@ -326,8 +326,8 @@ function vAyar(){
   var h=head('Ayarlar',false)+'<div class="stack">';
   var th=s.theme||'auto';
   h+='<h2>Görünüm</h2><div class="seg" role="group" aria-label="Görünüm">'+[['auto','Otomatik'],['light','Açık'],['dark','Koyu']].map(function(o){return '<button data-theme="'+o[0]+'" aria-pressed="'+(th===o[0])+'">'+o[1]+'</button>'}).join('')+'</div><div class="note">Otomatik: iPhone’un açık/koyu ayarını izler.</div>';
-  h+='<h2>TAG paket fiyatları</h2><div class="card stack">'+
-     fld('p3','3 saatlik paket (₺)',s.p3)+fld('pDay','Günlük paket (₺)',s.pDay)+fld('pWeek','Haftalık paket (₺)',s.pWeek)+
+  h+='<h2>Sabit ödeme fiyatları</h2><div class="note">Çalıştığınız sistemin paket ya da kontak ücretleri. Değişince buradan veya ödeme eklerken güncelleyin.</div><div class="card stack">'+
+     fld('p3','3 saatlik (₺)',s.p3)+fld('pDay','Günlük (₺)',s.pDay)+fld('pWeek','Haftalık (₺)',s.pWeek)+
      '<div class="field"><label class="label" for="quick">Hızlı tutar butonları (virgülle)</label><input id="quick" inputmode="numeric" value="'+s.quick.join(', ')+'"></div>'+
      '<button class="btn pri block" data-act="saveset">Kaydet</button></div>';
   h+='<h2>Yedekleme</h2><div class="card stack"><div class="note">Veriler yalnızca bu telefonda durur. Haftada bir yedek alıp dosyayı iCloud Drive’a veya WhatsApp’ta kendinize gönderin.'+
@@ -379,13 +379,13 @@ function addExp(cat){
   },'<div class="field"><label class="label" for="note">Not (isteğe bağlı)</label><input id="note" placeholder="'+(cat==='bakim'?'ör. yağ değişimi':'')+'"></div>');
 }
 function addTag(t){
-  var s=S.set,map={'3':['3 saatlik','p3'],g:['Günlük','pDay'],h:['Haftalık','pWeek']};var m=map[t],old=s[m[1]];
-  amountSheet('TAG '+m[0].toLowerCase()+' paket',[],function(v,sh){
+  var s=S.set,map={'3':['3 Saatlik','p3'],g:['Günlük','pDay'],h:['Haftalık','pWeek']};var m=map[t],old=s[m[1]];
+  amountSheet(m[0]+' sabit ödeme',[],function(v,sh){
     var keep=sh.querySelector('#keepprice').checked,changed=Math.abs(v-old)>0.001;
     S.exps.push({id:uid(),day:state.day,ts:stampFor(state.day),cat:'tag',amount:v,note:m[0]});
     if(changed&&keep)S.set[m[1]]=v;
-    save();render();toast(changed&&keep?'Paket eklendi · yeni fiyat kaydedildi':'TAG '+m[0].toLowerCase()+' paket eklendi');
-  },'<div class="note">Son kayıtlı fiyat <b>'+tl2(old)+'</b>. Uygulamadaki fiyat farklıysa tutarı değiştirin.</div>'+
+    save();render();toast(changed&&keep?'Ödeme eklendi · yeni fiyat kaydedildi':m[0]+' sabit ödeme eklendi');
+  },'<div class="note">Son kayıtlı fiyat <b>'+tl2(old)+'</b>. Güncel fiyat farklıysa tutarı değiştirin.</div>'+
     '<label class="check"><input type="checkbox" id="keepprice" checked><span>Fiyat değiştiyse bundan sonra bu fiyatı kullan<br><small>Tek seferlik indirimse işareti kaldırın.</small></span></label>',
   String(old).replace('.',','));
 }
@@ -432,7 +432,7 @@ function exportFile(name,text,mime,onDone){
   }
 }
 function backup(){
-  var d=new Date();var name='tag-takip-yedek-'+dkey(d)+'.json';
+  var d=new Date();var name='surucu-kasasi-yedek-'+dkey(d)+'.json';
   var data=clone(S);data.exportedAt=d.toISOString();
   exportFile(name,JSON.stringify(data),'application/json',function(){S.lastBackup=Date.now();save()});
 }
@@ -443,14 +443,14 @@ function csv(){
   S.shifts.forEach(function(s){if(s.end)all.push([s.day,fmtTime(s.start),'Mesai',hrsShort(s.end-s.start),'',(s.kmEnd!=null&&s.kmStart!=null)?(s.kmEnd-s.kmStart)+' km':''])});
   all.sort(function(a,b){return(a[0]+a[1]).localeCompare(b[0]+b[1])});
   all.forEach(function(r){lines.push(r.map(function(c){return typeof c==='number'?String(c).replace('.',','):'"'+String(c).replace(/"/g,'""')+'"'}).join(';'))});
-  exportFile('tag-takip-'+today()+'.csv','﻿'+lines.join('\n'),'text/csv');
+  exportFile('surucu-kasasi-'+today()+'.csv','﻿'+lines.join('\n'),'text/csv');
 }
 function restore(){var fi=document.getElementById('restorefile');fi.value='';fi.click()}
 document.addEventListener('change',function(e){
   if(e.target.id!=='restorefile'||!e.target.files[0])return;
   var rd=new FileReader();rd.onload=function(){
     var d;try{d=JSON.parse(rd.result)}catch(err){toast('Dosya okunamadı. Doğru yedek dosyasını seçin.');return}
-    if(!d||!Array.isArray(d.rides)||!Array.isArray(d.exps)){toast('Bu dosya bir TAG Takip yedeği değil.');return}
+    if(!d||!Array.isArray(d.rides)||!Array.isArray(d.exps)){toast('Bu dosya bir Sürücü Kasası yedeği değil.');return}
     openSheet('<h3>Yedeği geri yükle</h3><div>Yedekte <b>'+d.rides.length+'</b> yolcu ve <b>'+d.exps.length+'</b> gider kaydı var. Telefondaki mevcut kayıtların yerine geçecek.</div><div class="acts"><button class="btn" data-x="1">Vazgeç</button><button class="btn pri" data-ok="1">Geri yükle</button></div>',function(sh){
       sh.addEventListener('click',function(ev){var b=ev.target.closest('button');if(!b)return;if(b.dataset.x)closeSheet();
         if(b.dataset.ok){var s=clone(DEF);s.rides=d.rides;s.exps=d.exps;s.shifts=d.shifts||[];for(var k in d.set||{})s.set[k]=d.set[k];s.lastBackup=d.lastBackup||Date.now();
@@ -467,7 +467,7 @@ function wipe(){
 }
 function saveSet(){
   var p3=parseAmt(val('p3')),pd=parseAmt(val('pDay')),pw=parseAmt(val('pWeek'));
-  if(!(p3>0&&pd>0&&pw>0)){toast('Paket fiyatlarını kontrol edin');return}
+  if(!(p3>0&&pd>0&&pw>0)){toast('Sabit ödeme fiyatlarını kontrol edin');return}
   var q=val('quick').split(/[,;\s]+/).map(parseAmt).filter(function(x){return x>0}).slice(0,9);
   S.set.p3=p3;S.set.pDay=pd;S.set.pWeek=pw;if(q.length)S.set.quick=q;save();render();toast('Ayarlar kaydedildi');
 }
