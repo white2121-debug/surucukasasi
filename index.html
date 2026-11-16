@@ -121,8 +121,9 @@ nav.tabs button svg{width:24px;height:24px}
 nav.tabs button[aria-current="page"]{color:var(--fg)}
 nav.tabs button[aria-current="page"] svg{color:var(--accent)}
 
-.sheetbg{position:fixed;inset:0;z-index:20;background:rgba(0,0,0,.45);display:flex;align-items:flex-end;justify-content:center}
-.sheet{width:100%;max-width:520px;background:var(--surface);border-radius:20px 20px 0 0;padding:18px max(16px,env(safe-area-inset-left,0px)) calc(18px + env(safe-area-inset-bottom,0px)) max(16px,env(safe-area-inset-right,0px));display:flex;flex-direction:column;gap:14px;max-height:92vh;overflow:auto}
+.sheetbg{position:fixed;left:0;right:0;top:0;height:100%;z-index:20;background:rgba(0,0,0,.45);display:flex;align-items:flex-end;justify-content:center}
+.sheet{width:100%;max-width:520px;background:var(--surface);border-radius:20px 20px 0 0;padding:18px max(16px,env(safe-area-inset-left,0px)) calc(18px + env(safe-area-inset-bottom,0px)) max(16px,env(safe-area-inset-right,0px));display:flex;flex-direction:column;gap:14px;max-height:100%;overflow:auto;overscroll-behavior:contain}
+.sheet .acts .btn{height:56px;font-size:18px}
 .sheet h3{margin:0;font-family:var(--display);font-size:24px;text-transform:uppercase;letter-spacing:.03em}
 .amtin{height:76px;border-radius:14px;border:2px solid var(--accent);background:var(--surface2);font-family:var(--display);font-size:46px;font-weight:700;text-align:center;width:100%;font-variant-numeric:tabular-nums}
 .chips{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}
@@ -346,15 +347,25 @@ function fld(id,l,v){return '<div class="field"><label class="label" for="'+id+'
 var sheetEl=document.getElementById('sheet');
 function openSheet(html,onReady){
   sheetEl.innerHTML='<div class="sheetbg" data-close="1"><div class="sheet" role="dialog" aria-modal="true">'+html+'</div></div>';
+  fitSheet();
   if(onReady)onReady(sheetEl.querySelector('.sheet'));
 }
 function closeSheet(){sheetEl.innerHTML=''}
+/* Klavye açılınca pencereyi klavyenin hemen üstüne oturt */
+function fitSheet(){
+  var bg=sheetEl.querySelector('.sheetbg'),v=window.visualViewport;if(!bg||!v)return;
+  bg.style.top=v.offsetTop+'px';bg.style.height=v.height+'px';
+  var sh=bg.firstChild,kb=window.innerHeight-v.height>120;
+  if(sh)sh.style.paddingBottom=kb?'12px':'';
+}
+if(window.visualViewport){visualViewport.addEventListener('resize',fitSheet);visualViewport.addEventListener('scroll',fitSheet)}
 sheetEl.addEventListener('click',function(e){if(e.target.dataset&&e.target.dataset.close)closeSheet()});
 
 function amountSheet(title,quick,onOk,extra,prefill){
-  openSheet('<h3>'+title+'</h3><input class="amtin" id="amt" inputmode="decimal" placeholder="0" autocomplete="off" value="'+(prefill||'')+'">'+
+  openSheet('<h3>'+title+'</h3><input class="amtin" id="amt" inputmode="decimal" enterkeyhint="done" placeholder="0" autocomplete="off" value="'+(prefill||'')+'">'+
+    '<div class="acts"><button class="btn" data-x="1">Vazgeç</button><button class="btn pri" data-ok="1">Kaydet</button></div>'+
     (quick&&quick.length?'<div class="chips">'+quick.map(function(q){return '<button data-q="'+q+'">'+q.toLocaleString('tr-TR')+'</button>'}).join('')+'</div>':'')+
-    (extra||'')+'<div class="acts"><button class="btn" data-x="1">Vazgeç</button><button class="btn pri" data-ok="1">Kaydet</button></div>',
+    (extra||''),
   function(sh){
     var inp=sh.querySelector('#amt');setTimeout(function(){inp.focus();if(prefill)inp.select()},60);
     sh.addEventListener('click',function(e){var b=e.target.closest('button');if(!b)return;
@@ -391,7 +402,7 @@ function addTag(t){
 }
 function lastKm(){var m=null;S.shifts.forEach(function(s){if(s.kmEnd!=null&&(m==null||s.end>m.end))m=s});return m?m.kmEnd:''}
 function startShift(){
-  openSheet('<h3>Mesaiye başla</h3><div class="field"><label class="label" for="km">Araç km (gösterge)</label><input id="km" class="amtin" inputmode="numeric" value="'+lastKm()+'" placeholder="ör. 84250"></div><div class="note">Km girmezseniz yalnızca süre tutulur.</div><div class="acts"><button class="btn" data-x="1">Vazgeç</button><button class="btn pri" data-ok="1">Başlat</button></div>',function(sh){
+  openSheet('<h3>Mesaiye başla</h3><div class="field"><label class="label" for="km">Araç km (gösterge)</label><input id="km" class="amtin" inputmode="numeric" value="'+lastKm()+'" placeholder="ör. 84250"></div><div class="acts"><button class="btn" data-x="1">Vazgeç</button><button class="btn pri" data-ok="1">Başlat</button></div><div class="note">Km girmezseniz yalnızca süre tutulur.</div>',function(sh){
     sh.addEventListener('click',function(e){var b=e.target.closest('button');if(!b)return;if(b.dataset.x)closeSheet();
       if(b.dataset.ok){var km=parseAmt(sh.querySelector('#km').value);var t=today();
         S.shifts.push({id:uid(),day:t,start:Date.now(),end:null,kmStart:km>=0?km:null,kmEnd:null});state.day=t;save();closeSheet();render();toast('Mesai başladı')}});
